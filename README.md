@@ -46,3 +46,6 @@ npm install
 
 # Start development server
 npm run dev
+
+# Live link of Web-app
+https://algo-gantt-job-scheduling-visualize.vercel.app/
