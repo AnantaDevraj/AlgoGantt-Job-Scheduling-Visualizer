@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProcessInputForm from "../components/ProcessInputForm";
+import ProcessGraph from "../components/ProcessGraph";
 
 // FUNCTION FOR PERFORMING "SJF SCHEDULING ALGORITHM" ===>
 
@@ -9,7 +10,8 @@ const calculateSJF = (processes) => {
   let n = processes.length;
   let isVisited = Array(n).fill(false);
   let results = [];
-  let totalWT = 0, totalTAT = 0;
+  let totalWT = 0,
+    totalTAT = 0;
 
   while (completed < n) {
     let idx = -1;
@@ -18,7 +20,10 @@ const calculateSJF = (processes) => {
     for (let i = 0; i < n; i++) {
       const p = processes[i];
       if (p.arrivalTime <= time && !isVisited[i]) {
-        if (p.burstTime < minBT || (p.burstTime === minBT && p.arrivalTime < processes[idx]?.arrivalTime)) {
+        if (
+          p.burstTime < minBT ||
+          (p.burstTime === minBT && p.arrivalTime < processes[idx]?.arrivalTime)
+        ) {
           minBT = p.burstTime;
           idx = i;
         }
@@ -40,7 +45,7 @@ const calculateSJF = (processes) => {
         startTime,
         completionTime,
         turnaroundTime,
-        waitingTime
+        waitingTime,
       });
 
       isVisited[idx] = true;
@@ -56,7 +61,6 @@ const calculateSJF = (processes) => {
 
   return { results, avgWT, avgTAT };
 };
-
 
 const SJF = () => {
   const [processes, setProcesses] = useState([]);
@@ -205,6 +209,9 @@ const SJF = () => {
             </div>
           </div>
         </>
+      )}
+      {showSchedule && scheduledProcesses.length > 0 && (
+        <ProcessGraph data={scheduledProcesses} />
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProcessInputForm from "../components/ProcessInputForm";
+import ProcessGraph from "../components/ProcessGraph";
 
 // FUNCTION FOR PERFORMING "FCFS SCHEDULING ALGORITHM" ===>
 
@@ -189,6 +190,9 @@ const FCFS = () => {
             </div>
           </div>
         </>
+      )}
+      {showSchedule && scheduledProcesses.length > 0 && (
+        <ProcessGraph data={scheduledProcesses} />
       )}
     </div>
   );
