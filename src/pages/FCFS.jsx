@@ -1,6 +1,15 @@
 import { useState } from "react";
 import ProcessInputForm from "../components/ProcessInputForm";
-import ProcessGraph from "../components/ProcessGraph";
+import GanttChart from "../components/GanttChart";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 // FUNCTION FOR PERFORMING "FCFS SCHEDULING ALGORITHM" ===>
 
@@ -57,6 +66,12 @@ const FCFS = () => {
     const id = processes.length + 1;
     setProcesses([...processes, { id, ...process }]);
   };
+   const chartData = scheduledProcesses.map((p) => ({
+    name: `P${p.id}`,
+    Arrival: p.arrivalTime,
+    Burst: p.burstTime,
+    Waiting: p.waitingTime,
+  }));
 
   return (
     <div className="p-6 min-h-screen">
@@ -98,7 +113,8 @@ const FCFS = () => {
           </button>
         </div>
       )}
-      {/*Reset Button */}
+
+      {/* Reset Button */}
       {(processes.length > 0 || showSchedule) && (
         <div className="text-center mt-6">
           <button
@@ -189,10 +205,29 @@ const FCFS = () => {
               ))}
             </div>
           </div>
+
+          {/* Bar Chart Comparison */}
+          <div className="mt-10 max-w-5xl mx-auto bg-white p-6 rounded-xl shadow">
+            <h3 className="text-xl font-semibold mb-4 text-center">
+              Time Comparison Chart
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="Arrival" fill="#8884d8" />
+                <Bar dataKey="Burst" fill="#82ca9d" />
+                <Bar dataKey="Waiting" fill="#ffc658" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </>
       )}
+
       {showSchedule && scheduledProcesses.length > 0 && (
-        <ProcessGraph data={scheduledProcesses} />
+        <GanttChart data={scheduledProcesses} />
       )}
     </div>
   );

@@ -11,75 +11,110 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// FUNCTION FOR PERFORMING "SJF SCHEDULING ALGORITHM" ===>
+// FUNCTION FOR PERFORMING "ROUND ROBIN SCHEDULING ALGORITHM" ===>
 
-const calculateSJF = (processes) => {
-  let time = 0;
+const calculateRoundRobinSchedule = (processes, timeQuantum = 2) => {
+  const sorted = [...processes].sort((a, b) => a.arrivalTime - b.arrivalTime);
+  const n = sorted.length;
+  const remainingTime = sorted.map((p) => p.burstTime);
+  const isCompleted = new Array(n).fill(false);
+
+  const result = [];
+  let currentTime = 0;
   let completed = 0;
-  let n = processes.length;
-  let isVisited = Array(n).fill(false);
-  let results = [];
-  let totalWT = 0,
-    totalTAT = 0;
+  const queue = [];
+  const visited = new Array(n).fill(false);
+
+  let totalWT = 0;
+  let totalTAT = 0;
+
+  // Push first arrived processes
+  for (let i = 0; i < n; i++) {
+    if (sorted[i].arrivalTime <= currentTime && !visited[i]) {
+      queue.push(i);
+      visited[i] = true;
+    }
+  }
 
   while (completed < n) {
-    let idx = -1;
-    let minBT = Infinity;
+    if (queue.length === 0) {
+      currentTime++;
+      for (let i = 0; i < n; i++) {
+        if (sorted[i].arrivalTime <= currentTime && !visited[i]) {
+          queue.push(i);
+          visited[i] = true;
+        }
+      }
+      continue;
+    }
+
+    const idx = queue.shift();
+    const process = sorted[idx];
+
+    const startTime = currentTime;
+    const execTime = Math.min(timeQuantum, remainingTime[idx]);
+    currentTime += execTime;
+    remainingTime[idx] -= execTime;
+
+    result.push({
+      ...process,
+      id: process.id,
+      startTime,
+      completionTime: currentTime,
+      execTime,
+    });
 
     for (let i = 0; i < n; i++) {
-      const p = processes[i];
-      if (p.arrivalTime <= time && !isVisited[i]) {
-        if (
-          p.burstTime < minBT ||
-          (p.burstTime === minBT && p.arrivalTime < processes[idx]?.arrivalTime)
-        ) {
-          minBT = p.burstTime;
-          idx = i;
-        }
+      if (
+        sorted[i].arrivalTime <= currentTime &&
+        !visited[i] &&
+        remainingTime[i] > 0
+      ) {
+        queue.push(i);
+        visited[i] = true;
       }
     }
 
-    if (idx !== -1) {
-      const p = processes[idx];
-      const startTime = time;
-      const completionTime = startTime + p.burstTime;
-      const turnaroundTime = completionTime - p.arrivalTime;
-      const waitingTime = turnaroundTime - p.burstTime;
-
-      totalWT += waitingTime;
+    if (remainingTime[idx] > 0) {
+      queue.push(idx);
+    } else if (!isCompleted[idx]) {
+      isCompleted[idx] = true;
+      const turnaroundTime = currentTime - process.arrivalTime;
+      const waitingTime = turnaroundTime - process.burstTime;
       totalTAT += turnaroundTime;
+      totalWT += waitingTime;
 
-      results.push({
-        ...p,
-        startTime,
-        completionTime,
+      sorted[idx] = {
+        ...process,
+        completionTime: currentTime,
         turnaroundTime,
         waitingTime,
-      });
-
-      isVisited[idx] = true;
+      };
       completed++;
-      time = completionTime;
-    } else {
-      time++; // CPU is idle
     }
   }
+
+  const finalProcesses = sorted.map((p) => ({
+    ...p,
+  }));
 
   const avgWT = (totalWT / n).toFixed(2);
   const avgTAT = (totalTAT / n).toFixed(2);
 
-  return { results, avgWT, avgTAT };
+  return { results: finalProcesses, ganttChart: result, avgWT, avgTAT };
 };
 
-const SJF = () => {
+const RoundRobin = () => {
   const [processes, setProcesses] = useState([]);
   const [showSchedule, setShowSchedule] = useState(false);
+  const[timeQuantum ,setTimeQuantum] = useState(2);
 
   const {
     results: scheduledProcesses,
+    ganttChart,
     avgWT,
     avgTAT,
-  } = calculateSJF(processes);
+  } = calculateRoundRobinSchedule(processes, timeQuantum); // Time Quantum = 2
 
   const handleAddProcess = (process) => {
     const id = processes.length + 1;
@@ -96,8 +131,18 @@ const SJF = () => {
   return (
     <div className="p-6 min-h-screen">
       <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">
-        SJF Scheduling
+        Round Robin Scheduling
       </h2>
+      <div className="my-4 flex justify-center">
+        <label className="block mb-1 font-medium text-2xl">Time Quantum : </label>
+        <input
+          type="number"
+          min="1"
+          value={timeQuantum}
+          onChange={(e) => setTimeQuantum(Number(e.target.value))}
+          className="border p-2 rounded w-32 mx-3"
+        />
+      </div>
 
       <ProcessInputForm onAddProcess={handleAddProcess} />
 
@@ -121,6 +166,7 @@ const SJF = () => {
           </ul>
         )}
       </div>
+      
 
       {/* Start Scheduling Button */}
       {processes.length > 0 && !showSchedule && (
@@ -154,7 +200,7 @@ const SJF = () => {
         <>
           <div className="mt-10 max-w-5xl mx-auto bg-white p-6 rounded-xl shadow">
             <h3 className="text-xl font-semibold mb-4 text-center">
-              SJF Scheduling Table
+              Round Robin Scheduling Table
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full table-auto border-collapse border">
@@ -163,7 +209,6 @@ const SJF = () => {
                     <th className="border px-4 py-2">PID</th>
                     <th className="border px-4 py-2">AT</th>
                     <th className="border px-4 py-2">BT</th>
-                    <th className="border px-4 py-2">ST</th>
                     <th className="border px-4 py-2">CT</th>
                     <th className="border px-4 py-2">TAT</th>
                     <th className="border px-4 py-2">WT</th>
@@ -175,7 +220,6 @@ const SJF = () => {
                       <td className="border px-4 py-2">P{p.id}</td>
                       <td className="border px-4 py-2">{p.arrivalTime}</td>
                       <td className="border px-4 py-2">{p.burstTime}</td>
-                      <td className="border px-4 py-2">{p.startTime}</td>
                       <td className="border px-4 py-2">{p.completionTime}</td>
                       <td className="border px-4 py-2">{p.turnaroundTime}</td>
                       <td className="border px-4 py-2">{p.waitingTime}</td>
@@ -202,12 +246,12 @@ const SJF = () => {
               Gantt Chart
             </h3>
             <div className="flex items-center border border-gray-300 rounded overflow-x-auto px-4 py-2">
-              {scheduledProcesses.map((p, index) => (
+              {ganttChart.map((p, index) => (
                 <div
-                  key={p.id}
+                  key={`${p.id}-${index}`}
                   className="flex flex-col items-center justify-end mx-1 animate-slide"
                   style={{
-                    minWidth: `${p.burstTime * 40}px`,
+                    minWidth: `${p.execTime * 40}px`,
                     backgroundColor: "#60A5FA",
                     color: "white",
                     borderRadius: "6px",
@@ -246,11 +290,11 @@ const SJF = () => {
         </>
       )}
 
-      {showSchedule && scheduledProcesses.length > 0 && (
-        <GanttChart data={scheduledProcesses} />
+      {showSchedule && ganttChart.length > 0 && (
+        <GanttChart data={ganttChart} />
       )}
     </div>
   );
 };
 
-export default SJF;
+export default RoundRobin;
