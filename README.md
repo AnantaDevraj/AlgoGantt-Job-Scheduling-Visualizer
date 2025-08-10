@@ -21,7 +21,7 @@ This project helps students and developers understand how different scheduling a
 
 - **Frontend**: React + Tailwind CSS
 - **Visualization**: Custom Gantt components (HTML/CSS) and Chart.js (planned)
-- **Algorithms**: Written in **C++**, to be integrated via backend or WebAssembly
+- **Algorithms**: Written in **Javascript**, to be integrated via backend or WebAssembly
 
 ---
 
