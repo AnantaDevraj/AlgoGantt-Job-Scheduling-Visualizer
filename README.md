@@ -20,15 +20,17 @@ This project helps students and developers understand how different scheduling a
 ## 🛠️ Tech Stack
 
 - **Frontend**: React + Tailwind CSS
-- **Visualization**: Custom Gantt components (HTML/CSS) and Chart.js (planned)
-- **Algorithms**: Written in **Javascript**, to be integrated via backend or WebAssembly
+- **Visualization**: Custom Gantt components (HTML/CSS) and Chart.js 
+- **Algorithms**: Written in **Javascript**, integrated via backend
 
 ---
 
 ## 📅 Completed Milestones
 
 - ✅ Day 1: Project setup, Navbar with dropdown, FCFS form UI
-- 🔜 Day 2: FCFS scheduling logic + Gantt chart visualization
+- ✅ Day 2: FCFS scheduling logic + Gantt chart visualization
+- ✅ Day 3: SJF scheduling logic + Gantt chart visualization
+- ✅ Day 4: Round Robin scheduling logic + Gantt chart visualization
 
 ---
 
